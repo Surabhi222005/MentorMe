@@ -9,10 +9,15 @@
         .error { background-color: #f8d7da; border-color: #f5c6cb; }
         button { padding: 10px 20px; margin: 5px; cursor: pointer; }
         input { padding: 8px; width: 300px; margin: 5px; }
+        .url-display { background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; }
     </style>
 </head>
 <body>
     <h1>MentorMe API Test</h1>
+    
+    <div class="url-display">
+        <strong>Backend URL:</strong> <span id="backendUrl">Detecting...</span>
+    </div>
     
     <h2>Test Chat API</h2>
     <input type="text" id="message" placeholder="Enter your message" value="Hello, can you help me with JavaScript?">
@@ -26,6 +31,28 @@
     <script>
         // Function to find available backend port
         async function findBackendPort() {
+            // Production URL (Render.com)
+            const productionUrl = 'https://mentorme-wa2h.onrender.com';
+            
+            // Test production first
+            try {
+                const response = await fetch(`${productionUrl}/api/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    console.log(`✅ Production backend found at ${productionUrl}`);
+                    document.getElementById('backendUrl').textContent = productionUrl;
+                    return productionUrl;
+                }
+            } catch (error) {
+                console.log('⚠️ Production backend not accessible, trying localhost...');
+            }
+            
+            // Fallback to localhost ports
             const ports = [5000, 5001, 5002, 5003, 5004, 5005];
             
             for (const port of ports) {
@@ -38,7 +65,8 @@
                     });
                     
                     if (response.ok) {
-                        console.log(`✅ Backend found on port ${port}`);
+                        console.log(`✅ Local backend found on port ${port}`);
+                        document.getElementById('backendUrl').textContent = `http://localhost:${port}`;
                         return `http://localhost:${port}`;
                     }
                 } catch (error) {
@@ -46,9 +74,10 @@
                 }
             }
             
-            // Fallback to default
-            console.warn('⚠️ Backend not found on any port, using default');
-            return 'http://localhost:5000';
+            // Default to production
+            console.warn('⚠️ No local backend found, using production URL');
+            document.getElementById('backendUrl').textContent = productionUrl;
+            return productionUrl;
         }
 
         async function testChat() {
@@ -97,6 +126,11 @@
                 resultDiv.innerHTML = `<div class="result error"><h3>❌ Network Error:</h3><p>${error.message}</p></div>`;
             }
         }
+
+        // Initialize backend URL detection on page load
+        window.onload = function() {
+            findBackendPort();
+        };
     </script>
 </body>
 </html> 

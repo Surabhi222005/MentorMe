@@ -1,7 +1,7 @@
 // API Configuration for MentorMe
 const API_CONFIG = {
-  // Base URL for API calls
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  // Base URL for API calls - use Render.com URL for production
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://mentorme-wa2h.onrender.com',
   
   // API endpoints
   ENDPOINTS: {

@@ -1,0 +1,10 @@
+{
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://mentorme-wa2h.onrender.com"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://mentorme-wa2h.onrender.com"
+    }
+  }
+} 

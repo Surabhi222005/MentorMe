@@ -4,7 +4,9 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*',
+        destination: process.env.NODE_ENV === 'production' 
+          ? 'https://mentorme-wa2h.onrender.com/api/:path*'
+          : 'http://localhost:5000/api/:path*',
       },
     ];
   },
@@ -19,6 +21,10 @@ const nextConfig = {
         ],
       },
     ];
+  },
+  // Add environment variable for API URL
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://mentorme-wa2h.onrender.com',
   },
 }
 
