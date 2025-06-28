@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MentorMe - AI Learning Buddy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+                        'slide-in': 'slideIn 0.6s ease-out',
+                        'fade-in': 'fadeIn 0.8s ease-out',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'typing': 'typing 3s steps(40, end)',
+                        'blink': 'blink 0.75s step-end infinite',
+                        'particle-float': 'particle-float 6s infinite linear',
+                        'dots': 'dots 1.5s steps(5, end) infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(14, 165, 233, 0.6); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+            40%, 43% { transform: translate3d(0, -8px, 0); }
+            70% { transform: translate3d(0, -4px, 0); }
+            90% { transform: translate3d(0, -2px, 0); }
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink {
+            0%, 50% { border-color: transparent; }
+            51%, 100% { border-color: #0ea5e9; }
+        }
+
+        @keyframes particle-float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        /* Gradient backgrounds */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-bg-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .gradient-bg-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .gradient-bg-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Interactive hover effects */
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        /* Message animations */
+        .message-enter {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message-user {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message-ai {
+            animation: slideIn 0.3s ease-out 0.1s both;
+        }
+
+        /* Particle effect */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(14, 165, 233, 0.6);
+            border-radius: 50%;
+            animation: particle-float 6s infinite linear;
+        }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.5);
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+        }
+
+        /* Loading animation */
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        /* Text gradient */
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen relative overflow-hidden">
+    <!-- Animated Background Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Animated Header -->
+        <div class="text-center mb-8 animate-fade-in">
+            <div class="inline-block animate-bounce-slow mb-4">
+                <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto animate-pulse-glow">
+                    <span class="text-white text-2xl font-bold">🎓</span>
+                </div>
+            </div>
+            <h1 class="text-5xl font-bold text-gradient mb-2 animate-slide-in">
+                MentorMe
+            </h1>
+            <p class="text-gray-600 text-lg animate-slide-in" style="animation-delay: 0.2s">
+                Your AI-powered learning buddy
+            </p>
+            <div class="mt-4 animate-slide-in" style="animation-delay: 0.4s">
+                <span class="inline-block px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                    ✨ Interactive Demo Version
+                </span>
+            </div>
+        </div>
+
+        <!-- Interactive Tab Navigation -->
+        <div class="flex justify-center mb-8 animate-slide-in" style="animation-delay: 0.6s">
+            <div class="glass rounded-2xl p-2 shadow-xl hover-lift">
+                <button id="chatTab" class="px-8 py-3 rounded-xl font-medium transition-all duration-300 gradient-bg text-white shadow-lg transform scale-105">
+                    <span class="flex items-center space-x-2">
+                        <span>💬</span>
+                        <span>AI Tutor Chat</span>
+                    </span>
+                </button>
+                <button id="quizTab" class="px-8 py-3 rounded-xl font-medium transition-all duration-300 text-gray-600 hover:text-gray-800 hover:bg-white/50">
+                    <span class="flex items-center space-x-2">
+                        <span>🧠</span>
+                        <span>Quiz Generator</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-5xl mx-auto animate-fade-in" style="animation-delay: 0.8s">
+            <!-- Enhanced Chat Interface -->
+            <div id="chatInterface" class="glass rounded-2xl shadow-2xl overflow-hidden hover-lift">
+                <div class="p-6 border-b border-white/20 bg-gradient-to-r from-blue-500/10 to-purple-500/10">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-semibold text-gray-800">AI Tutor Chat</h2>
+                            <p class="text-gray-600 mt-1">Ask me anything about any topic!</p>
+                        </div>
+                        <button
+                            id="clearChat"
+                            class="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                        >
+                            Clear Chat
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Topics -->
+                <div id="quickTopics" class="p-6 border-b border-white/20">
+                    <p class="text-gray-600 mb-3">Try asking about:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="quick-topic px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors hover-scale">JavaScript</button>
+                        <button class="quick-topic px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors hover-scale">Python</button>
+                        <button class="quick-topic px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors hover-scale">React</button>
+                        <button class="quick-topic px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors hover-scale">Machine Learning</button>
+                        <button class="quick-topic px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors hover-scale">Blockchain</button>
+                        <button class="quick-topic px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors hover-scale">Quantum Physics</button>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div id="messages" class="h-96 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                    <div class="text-center text-gray-500 py-12">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center animate-float">
+                            <span class="text-white text-2xl">🤖</span>
+                        </div>
+                        <p class="text-lg">Start a conversation by asking about any topic!</p>
+                        <p class="text-sm mt-2">I can help you learn about programming, science, history, and more.</p>
+                    </div>
+                </div>
+
+                <!-- Enhanced Input Form -->
+                <form id="chatForm" class="p-6 border-t border-white/20 bg-gradient-to-r from-gray-50/50 to-blue-50/50">
+                    <div class="flex space-x-4">
+                        <div class="flex-1 relative">
+                            <input
+                                type="text"
+                                id="chatInput"
+                                placeholder="Enter a topic to learn about..."
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:shadow-md"
+                                disabled="false"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            id="chatSubmit"
+                            class="px-6 py-3 gradient-bg text-white rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover-scale"
+                        >
+                            <span class="flex items-center space-x-2">
+                                <span>🚀</span>
+                                <span>Ask</span>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Enhanced Quiz Interface -->
+            <div id="quizInterface" class="glass rounded-2xl shadow-2xl overflow-hidden hover-lift hidden">
+                <div class="p-6 border-b border-white/20 bg-gradient-to-r from-green-500/10 to-blue-500/10">
+                    <h2 class="text-2xl font-semibold text-gray-800">Quiz Generator</h2>
+                    <p class="text-gray-600 mt-1">Generate a quiz on any topic!</p>
+                </div>
+
+                <div id="quizContent">
+                    <!-- Enhanced Quiz Input Form -->
+                    <div class="p-6">
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center animate-float">
+                                <span class="text-white text-2xl">🧠</span>
+                            </div>
+                            <p class="text-gray-600">Enter a topic to generate an interactive quiz!</p>
+                        </div>
+                        <form id="quizForm">
+                            <div class="flex space-x-4">
+                                <input
+                                    type="text"
+                                    id="quizInput"
+                                    placeholder="Enter a topic for quiz generation..."
+                                    class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 hover:shadow-md"
+                                    disabled="false"
+                                />
+                                <button
+                                    type="submit"
+                                    id="quizSubmit"
+                                    class="px-6 py-3 gradient-bg-4 text-white rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover-scale"
+                                >
+                                    <span class="flex items-center space-x-2">
+                                        <span>⚡</span>
+                                        <span>Generate Quiz</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-12 text-gray-500 animate-fade-in" style="animation-delay: 1s">
+            <p>Built with ❤️ using HTML, TailwindCSS, and JavaScript</p>
+        </div>
+    </div>
+
+    <script>
+        // Mock AI responses for demo purposes
+        const mockResponses = {
+            "javascript": "JavaScript is a dynamic programming language that runs in web browsers. It's the backbone of modern web development, enabling interactive websites, dynamic content, and complex web applications. JavaScript can manipulate HTML elements, handle user events, make API calls, and even run on servers with Node.js. It's essential for frontend development and increasingly popular for backend development too!",
+            "python": "Python is a high-level, interpreted programming language known for its simplicity and readability. It's widely used in web development, data science, artificial intelligence, machine learning, automation, and scientific computing. Python's extensive standard library and third-party packages make it incredibly versatile. It's perfect for beginners and powerful enough for complex applications.",
+            "react": "React is a JavaScript library for building user interfaces, particularly single-page applications. Developed by Facebook, it uses a component-based architecture and a virtual DOM for efficient updates. React allows developers to create reusable UI components and manage application state effectively. It's the foundation of modern frontend development and works great with other libraries and frameworks.",
+            "machine learning": "Machine learning is a subset of artificial intelligence that enables computers to learn and improve from experience without being explicitly programmed. It uses algorithms to identify patterns in data and make predictions or decisions. Applications include recommendation systems, image recognition, natural language processing, autonomous vehicles, and medical diagnosis. It's transforming industries worldwide!",
+            "blockchain": "Blockchain is a distributed ledger technology that maintains a continuously growing list of records (blocks) that are linked and secured using cryptography. It's the technology behind cryptocurrencies like Bitcoin and enables secure, transparent, and tamper-proof transactions. Blockchain has applications in finance, supply chain management, voting systems, and digital identity verification.",
+            "quantum physics": "Quantum physics is the branch of physics that deals with the behavior of matter and energy at the atomic and subatomic level. It describes phenomena that classical physics cannot explain, such as superposition, entanglement, and wave-particle duality. Quantum physics has led to technologies like lasers, transistors, and quantum computers, revolutionizing our understanding of the universe."
+        };
+
+        const mockQuizzes = {
+            "javascript": {
+                questions: [
+                    {
+                        question: "What is JavaScript primarily used for?",
+                        options: ["Server-side programming only", "Web browser interactivity", "Database management", "Operating system development"],
+                        correctAnswer: 1
+                    },
+                    {
+                        question: "Which keyword is used to declare variables in modern JavaScript?",
+                        options: ["var", "let", "const", "All of the above"],
+                        correctAnswer: 3
+                    },
+                    {
+                        question: "What does DOM stand for in JavaScript?",
+                        options: ["Document Object Model", "Data Object Management", "Dynamic Object Method", "Document Oriented Markup"],
+                        correctAnswer: 0
+                    }
+                ]
+            },
+            "python": {
+                questions: [
+                    {
+                        question: "What is Python's primary design philosophy?",
+                        options: ["Speed over readability", "Readability counts", "Memory efficiency", "Platform independence"],
+                        correctAnswer: 1
+                    },
+                    {
+                        question: "Which symbol is used for comments in Python?",
+                        options: ["//", "/*", "#", "--"],
+                        correctAnswer: 2
+                    },
+                    {
+                        question: "What is the correct way to create a function in Python?",
+                        options: ["function myFunc():", "def myFunc():", "create myFunc():", "func myFunc():"],
+                        correctAnswer: 1
+                    }
+                ]
+            }
+        };
+
+        // Generate particles
+        function generateParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // DOM elements
+        const chatTab = document.getElementById('chatTab');
+        const quizTab = document.getElementById('quizTab');
+        const chatInterface = document.getElementById('chatInterface');
+        const quizInterface = document.getElementById('quizInterface');
+        const messages = document.getElementById('messages');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const chatSubmit = document.getElementById('chatSubmit');
+        const quizForm = document.getElementById('quizForm');
+        const quizInput = document.getElementById('quizInput');
+        const quizSubmit = document.getElementById('quizSubmit');
+        const quizContent = document.getElementById('quizContent');
+        const clearChat = document.getElementById('clearChat');
+        const quickTopics = document.querySelectorAll('.quick-topic');
+
+        let currentQuiz = null;
+        let selectedAnswers = [];
+
+        // Initialize particles
+        generateParticles();
+
+        // Tab switching with enhanced animations
+        chatTab.addEventListener('click', () => {
+            chatTab.className = 'px-8 py-3 rounded-xl font-medium transition-all duration-300 gradient-bg text-white shadow-lg transform scale-105';
+            quizTab.className = 'px-8 py-3 rounded-xl font-medium transition-all duration-300 text-gray-600 hover:text-gray-800 hover:bg-white/50';
+            chatInterface.classList.remove('hidden');
+            quizInterface.classList.add('hidden');
+        });
+
+        quizTab.addEventListener('click', () => {
+            quizTab.className = 'px-8 py-3 rounded-xl font-medium transition-all duration-300 gradient-bg text-white shadow-lg transform scale-105';
+            chatTab.className = 'px-8 py-3 rounded-xl font-medium transition-all duration-300 text-gray-600 hover:text-gray-800 hover:bg-white/50';
+            quizInterface.classList.remove('hidden');
+            chatInterface.classList.add('hidden');
+        });
+
+        // Quick topic buttons
+        quickTopics.forEach(button => {
+            button.addEventListener('click', () => {
+                chatInput.value = button.textContent;
+                chatInput.focus();
+            });
+        });
+
+        // Clear chat
+        clearChat.addEventListener('click', () => {
+            messages.innerHTML = `
+                <div class="text-center text-gray-500 py-12">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center animate-float">
+                        <span class="text-white text-2xl">🤖</span>
+                    </div>
+                    <p class="text-lg">Start a conversation by asking about any topic!</p>
+                    <p class="text-sm mt-2">I can help you learn about programming, science, history, and more.</p>
+                </div>
+            `;
+        });
+
+        // Enhanced chat functionality
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const topic = chatInput.value.trim();
+            if (!topic) return;
+
+            // Add user message with animation
+            addMessage(topic, true);
+            chatInput.value = '';
+
+            // Show loading with enhanced animation
+            const loadingId = addLoadingMessage();
+
+            // Simulate API call with realistic delay
+            setTimeout(() => {
+                // Remove loading message
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) {
+                    loadingElement.remove();
+                }
+
+                // Add AI response with animation
+                const response = getMockResponse(topic);
+                addMessage(response, false);
+            }, 1500);
+        });
+
+        // Enhanced quiz functionality
+        quizForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const topic = quizInput.value.trim();
+            if (!topic) return;
+
+            quizInput.value = '';
+            selectedAnswers = [];
+
+            // Show loading with enhanced animation
+            quizSubmit.innerHTML = `
+                <span class="flex items-center space-x-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Generating...</span>
+                </span>
+            `;
+            quizSubmit.disabled = true;
+
+            // Simulate API call
+            setTimeout(() => {
+                const quiz = getMockQuiz(topic);
+                if (quiz) {
+                    currentQuiz = quiz;
+                    displayQuiz(quiz);
+                } else {
+                    alert('Quiz generation failed. Please try a different topic.');
+                }
+                quizSubmit.innerHTML = `
+                    <span class="flex items-center space-x-2">
+                        <span>⚡</span>
+                        <span>Generate Quiz</span>
+                    </span>
+                `;
+                quizSubmit.disabled = false;
+            }, 2000);
+        });
+
+        function addMessage(text, isUser) {
+            const messageDiv = document.createElement('div');
+            const messageId = 'msg-' + Date.now();
+            messageDiv.id = messageId;
+            
+            messageDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'} message-${isUser ? 'user' : 'ai'}`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = `max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
+                isUser
+                    ? 'gradient-bg text-white'
+                    : 'bg-white/80 backdrop-blur-sm text-gray-800 shadow-lg'
+            } hover-lift`;
+            
+            messageContent.innerHTML = `
+                <p class="text-sm leading-relaxed">${text}</p>
+                <p class="text-xs opacity-70 mt-2">
+                    ${new Date().toLocaleTimeString()}
+                </p>
+            `;
+            
+            messageDiv.appendChild(messageContent);
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+            
+            return messageId;
+        }
+
+        function addLoadingMessage() {
+            const loadingDiv = document.createElement('div');
+            const loadingId = 'loading-' + Date.now();
+            loadingDiv.id = loadingId;
+            
+            loadingDiv.className = 'flex justify-start message-ai';
+            
+            const loadingContent = document.createElement('div');
+            loadingContent.className = 'bg-white/80 backdrop-blur-sm text-gray-800 px-4 py-3 rounded-2xl shadow-lg';
+            
+            loadingContent.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                    <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                    <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    <span class="text-sm ml-2">AI is thinking...</span>
+                </div>
+            `;
+            
+            loadingDiv.appendChild(loadingContent);
+            messages.appendChild(loadingDiv);
+            messages.scrollTop = messages.scrollHeight;
+            
+            return loadingId;
+        }
+
+        function getMockResponse(topic) {
+            const lowerTopic = topic.toLowerCase();
+            for (const [key, response] of Object.entries(mockResponses)) {
+                if (lowerTopic.includes(key)) {
+                    return response;
+                }
+            }
+            return `I'd be happy to help you learn about ${topic}! This is a fascinating subject that covers many important concepts. While I can provide general information, I recommend doing additional research to get the most comprehensive understanding. Feel free to ask follow-up questions!`;
+        }
+
+        function getMockQuiz(topic) {
+            const lowerTopic = topic.toLowerCase();
+            for (const [key, quiz] of Object.entries(mockQuizzes)) {
+                if (lowerTopic.includes(key)) {
+                    return quiz;
+                }
+            }
+            // Generate a generic quiz
+            return {
+                questions: [
+                    {
+                        question: `What is the main concept of ${topic}?`,
+                        options: ['A fundamental principle', 'A basic technique', 'A core methodology', 'A primary approach'],
+                        correctAnswer: 0
+                    },
+                    {
+                        question: `Which of the following is related to ${topic}?`,
+                        options: ['Basic concepts', 'Advanced techniques', 'Practical applications', 'All of the above'],
+                        correctAnswer: 3
+                    },
+                    {
+                        question: `How does ${topic} work?`,
+                        options: ['Through simple processes', 'Using complex algorithms', 'With multiple steps', 'In various ways'],
+                        correctAnswer: 3
+                    }
+                ]
+            };
+        }
+
+        function displayQuiz(quiz) {
+            let quizHTML = '<div class="p-6 space-y-6">';
+            
+            quiz.questions.forEach((question, questionIndex) => {
+                quizHTML += `
+                    <div class="glass rounded-xl p-6 hover-lift">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                            <span class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                ${questionIndex + 1}
+                            </span>
+                            ${question.question}
+                        </h3>
+                        <div class="space-y-3">
+                `;
+                
+                question.options.forEach((option, optionIndex) => {
+                    quizHTML += `
+                        <label class="flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-300 hover-scale ${
+                            selectedAnswers[questionIndex] === optionIndex
+                                ? 'border-blue-500 bg-blue-50 shadow-md'
+                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }">
+                            <input type="radio" name="question-${questionIndex}" value="${optionIndex}" class="mr-3 text-blue-500 focus:ring-blue-500">
+                            <span class="text-gray-700 font-medium">${option}</span>
+                        </label>
+                    `;
+                });
+                
+                quizHTML += `
+                        </div>
+                        <div id="result-${questionIndex}" class="mt-4 p-4 rounded-lg hidden"></div>
+                    </div>
+                `;
+            });
+            
+            quizHTML += `
+                <div class="mt-8 flex justify-between items-center">
+                    <button onclick="newQuiz()" class="px-6 py-3 text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-300 hover-scale">
+                        <span class="flex items-center space-x-2">
+                            <span>🔄</span>
+                            <span>New Quiz</span>
+                        </span>
+                    </button>
+                    <button onclick="checkAnswers()" id="checkBtn" class="px-8 py-3 gradient-bg-4 text-white rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover-scale">
+                        <span class="flex items-center space-x-2">
+                            <span>🎯</span>
+                            <span>Check Answers</span>
+                        </span>
+                    </button>
+                    <div id="score" class="text-xl font-bold text-gray-800 bg-gradient-to-r from-green-100 to-blue-100 px-6 py-3 rounded-xl hidden">
+                        <span class="flex items-center space-x-2">
+                            <span>🏆</span>
+                            <span>Score: 0/0</span>
+                        </span>
+                    </div>
+                </div>
+            </div>`;
+            
+            quizContent.innerHTML = quizHTML;
+            
+            // Add event listeners for radio buttons
+            quiz.questions.forEach((question, questionIndex) => {
+                question.options.forEach((option, optionIndex) => {
+                    const radio = document.querySelector(`input[name="question-${questionIndex}"][value="${optionIndex}"]`);
+                    radio.addEventListener('change', () => {
+                        selectedAnswers[questionIndex] = optionIndex;
+                    });
+                });
+            });
+        }
+
+        function checkAnswers() {
+            if (selectedAnswers.length !== currentQuiz.questions.length) {
+                alert('Please answer all questions before checking answers.');
+                return;
+            }
+
+            let correct = 0;
+            currentQuiz.questions.forEach((question, index) => {
+                const resultDiv = document.getElementById(`result-${index}`);
+                if (selectedAnswers[index] === question.correctAnswer) {
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center text-green-600 font-medium">
+                            <span class="text-2xl mr-2">✅</span>
+                            <span>Correct!</span>
+                        </div>
+                    `;
+                    correct++;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center text-red-600 font-medium">
+                            <span class="text-2xl mr-2">❌</span>
+                            <span>Incorrect. Correct answer: ${question.options[question.correctAnswer]}</span>
+                        </div>
+                    `;
+                }
+                resultDiv.classList.remove('hidden');
+            });
+
+            document.getElementById('checkBtn').classList.add('hidden');
+            const scoreDiv = document.getElementById('score');
+            scoreDiv.innerHTML = `
+                <span class="flex items-center space-x-2">
+                    <span>🏆</span>
+                    <span>Score: ${correct}/${currentQuiz.questions.length}</span>
+                </span>
+            `;
+            scoreDiv.classList.remove('hidden');
+        }
+
+        function newQuiz() {
+            currentQuiz = null;
+            selectedAnswers = [];
+            quizContent.innerHTML = `
+                <div class="p-6">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center animate-float">
+                            <span class="text-white text-2xl">🧠</span>
+                        </div>
+                        <p class="text-gray-600">Enter a topic to generate an interactive quiz!</p>
+                    </div>
+                    <form id="quizForm">
+                        <div class="flex space-x-4">
+                            <input
+                                type="text"
+                                id="quizInput"
+                                placeholder="Enter a topic for quiz generation..."
+                                class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 hover:shadow-md"
+                                disabled="false"
+                            />
+                            <button
+                                type="submit"
+                                id="quizSubmit"
+                                class="px-6 py-3 gradient-bg-4 text-white rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover-scale"
+                            >
+                                <span class="flex items-center space-x-2">
+                                    <span>⚡</span>
+                                    <span>Generate Quiz</span>
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            // Re-attach event listener
+            const newQuizForm = document.getElementById('quizForm');
+            newQuizForm.addEventListener('submit', quizForm.onsubmit);
+        }
+
+        // Make functions globally available
+        window.checkAnswers = checkAnswers;
+        window.newQuiz = newQuiz;
+    </script>
+</body>
+</html> 

@@ -1,0 +1,15 @@
+# Ignore environment variables
+.env
+
+# Node modules
+node_modules/
+
+# Next.js build files
+frontend/.next/
+
+# Logs
+*.log
+
+# System junk
+.DS_Store
+Thumbs.db

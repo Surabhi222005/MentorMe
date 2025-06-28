@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; width: 300px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>MentorMe API Test</h1>
+    
+    <h2>Test Chat API</h2>
+    <input type="text" id="message" placeholder="Enter your message" value="Hello, can you help me with JavaScript?">
+    <button onclick="testChat()">Test Chat</button>
+    <div id="chatResult"></div>
+    
+    <h2>Test Health API</h2>
+    <button onclick="testHealth()">Test Health</button>
+    <div id="healthResult"></div>
+
+    <script>
+        // Function to find available backend port
+        async function findBackendPort() {
+            const ports = [5000, 5001, 5002, 5003, 5004, 5005];
+            
+            for (const port of ports) {
+                try {
+                    const response = await fetch(`http://localhost:${port}/api/health`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    
+                    if (response.ok) {
+                        console.log(`✅ Backend found on port ${port}`);
+                        return `http://localhost:${port}`;
+                    }
+                } catch (error) {
+                    // Continue to next port
+                }
+            }
+            
+            // Fallback to default
+            console.warn('⚠️ Backend not found on any port, using default');
+            return 'http://localhost:5000';
+        }
+
+        async function testChat() {
+            const message = document.getElementById('message').value;
+            const resultDiv = document.getElementById('chatResult');
+            resultDiv.innerHTML = '<div class="result">Testing chat API...</div>';
+            
+            try {
+                const backendUrl = await findBackendPort();
+                const response = await fetch(`${backendUrl}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<div class="result success"><h3>✅ Chat API Response:</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                } else {
+                    const errorData = await response.text();
+                    resultDiv.innerHTML = `<div class="result error"><h3>❌ Chat API Error (${response.status}):</h3><pre>${errorData}</pre></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error"><h3>❌ Network Error:</h3><p>${error.message}</p></div>`;
+            }
+        }
+        
+        async function testHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.innerHTML = '<div class="result">Testing health API...</div>';
+            
+            try {
+                const backendUrl = await findBackendPort();
+                const response = await fetch(`${backendUrl}/api/health`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<div class="result success"><h3>✅ Health API Response:</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                } else {
+                    const errorData = await response.text();
+                    resultDiv.innerHTML = `<div class="result error"><h3>❌ Health API Error (${response.status}):</h3><pre>${errorData}</pre></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error"><h3>❌ Network Error:</h3><p>${error.message}</p></div>`;
+            }
+        }
+    </script>
+</body>
+</html> 
