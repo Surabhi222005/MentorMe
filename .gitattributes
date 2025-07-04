@@ -1,1 +1,2 @@
 New-Item .gitattributes -ItemType File
+* text=auto

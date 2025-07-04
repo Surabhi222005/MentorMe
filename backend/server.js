@@ -254,7 +254,7 @@ Do not include any text or explanation before or after the JSON. Do not use mark
     });
 
     const quizData = completion.choices[0].message.content;
-    console.log('Raw AI quiz response:', quizData); // Log the raw response for debugging
+    console.log('Raw AI quiz response:', quizData);
     // Try to parse the JSON response
     let questions;
     try {
