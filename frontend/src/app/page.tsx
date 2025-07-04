@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
-export default function LandingPage() {
+function LandingPage() {
   const { user, logout } = useAuth()
   const router = useRouter()
   const [activeSection, setActiveSection] = useState<'hero' | 'features' | 'about' | 'ai-tutor' | 'smart-notes' | 'quiz'>('hero')
@@ -355,3 +355,5 @@ export default function LandingPage() {
     </div>
   )
 }
+
+export default LandingPage;

@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [chatHistory, setChatHistory] = useState<Array<{role: string, content: string}>>([])
   const [isLoading, setIsLoading] = useState(false)
   const [quizTopic, setQuizTopic] = useState('')
-  const [quizQuestions, setQuizQuestions] = useState<Array<{question: string, options: string[], correct: number}>>([])
+  const [quizQuestions, setQuizQuestions] = useState<Array<{question: string, options: string[], correct: number, correctAnswer?: number}>>([])
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [score, setScore] = useState(0)
   const [showResults, setShowResults] = useState(false)
@@ -483,19 +483,21 @@ export default function Dashboard() {
                         {quizQuestions[currentQuestion].question}
                       </h3>
                       <div className="space-y-3">
-                        {quizQuestions[currentQuestion].options.map((option, index) => {
-                          const optionTrimmed = option.trim();
-                          const alreadyPrefixed = /^[A-Ha-h][\.:\)]\s/.test(optionTrimmed);
-                          return (
-                            <button
-                              key={index}
-                              onClick={() => handleQuizAnswer(index)}
-                              className="w-full text-left bg-[#244347] hover:bg-[#90e9f5] hover:text-[#112022] px-4 py-3 rounded-lg transition-colors"
-                            >
-                              {alreadyPrefixed ? optionTrimmed : `${String.fromCharCode(65 + index)}. ${optionTrimmed}`}
-                            </button>
-                          );
-                        })}
+                        {quizQuestions[currentQuestion] && Array.isArray(quizQuestions[currentQuestion].options) ? (
+                          quizQuestions[currentQuestion].options.map((option, index) => {
+                            const optionTrimmed = option.trim();
+                            const alreadyPrefixed = /^[A-Ha-h][\.:\)]\s/.test(optionTrimmed);
+                            return (
+                              <button
+                                key={index}
+                                onClick={() => handleQuizAnswer(index)}
+                                className="w-full text-left bg-[#244347] hover:bg-[#90e9f5] hover:text-[#112022] px-4 py-3 rounded-lg transition-colors"
+                              >
+                                {alreadyPrefixed ? optionTrimmed : `${String.fromCharCode(65 + index)}. ${optionTrimmed}`}
+                              </button>
+                            );
+                          })
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -517,26 +519,28 @@ export default function Dashboard() {
                       <div key={idx} className="bg-[#112022] rounded-lg p-4">
                         <div className="font-semibold text-white mb-2">Q{idx + 1}: {q.question}</div>
                         <div className="space-y-2">
-                          {q.options.map((option, oidx) => {
-                            const optionTrimmed = option.trim();
-                            const alreadyPrefixed = /^[A-Ha-h][\.\:\)]\s/.test(optionTrimmed);
-                            const display = alreadyPrefixed ? optionTrimmed : `${String.fromCharCode(65 + oidx)}. ${optionTrimmed}`;
-                            const isUser = userAnswer === oidx;
-                            const isCorrect = correctAnswer === oidx;
-                            let className = 'px-4 py-2 rounded-lg bg-[#244347] text-white';
-                            if (isCorrect && isUser) {
-                              className = 'px-4 py-2 rounded-lg bg-green-600 text-white font-bold';
-                            } else if (isCorrect) {
-                              className = 'px-4 py-2 rounded-lg bg-green-600 text-white font-bold';
-                            } else if (isUser) {
-                              className = 'px-4 py-2 rounded-lg bg-red-600 text-white font-bold';
-                            }
-                            return (
-                              <div key={oidx} className={className}>
-                                {display}
-                              </div>
-                            );
-                          })}
+                          {q.options && Array.isArray(q.options) ? (
+                            q.options.map((option, oidx) => {
+                              const optionTrimmed = option.trim();
+                              const alreadyPrefixed = /^[A-Ha-h][\.\:\)]\s/.test(optionTrimmed);
+                              const display = alreadyPrefixed ? optionTrimmed : `${String.fromCharCode(65 + oidx)}. ${optionTrimmed}`;
+                              const isUser = userAnswer === oidx;
+                              const isCorrect = correctAnswer === oidx;
+                              let className = 'px-4 py-2 rounded-lg bg-[#244347] text-white';
+                              if (isCorrect && isUser) {
+                                className = 'px-4 py-2 rounded-lg bg-green-600 text-white font-bold';
+                              } else if (isCorrect) {
+                                className = 'px-4 py-2 rounded-lg bg-green-600 text-white font-bold';
+                              } else if (isUser) {
+                                className = 'px-4 py-2 rounded-lg bg-red-600 text-white font-bold';
+                              }
+                              return (
+                                <div key={oidx} className={className}>
+                                  {display}
+                                </div>
+                              );
+                            })
+                          ) : null}
                         </div>
                       </div>
                     );
