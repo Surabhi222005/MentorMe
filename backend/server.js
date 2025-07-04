@@ -233,7 +233,7 @@ app.post('/api/quiz', async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You are a fun quiz generator! 🎯 Create exactly 3 multiple choice questions with 4 options each that are:
+          content: `You are a fun quiz generator! 🎯 Create at least 5 multiple choice questions with 4 options each that are:
 
 - ENGAGING and INTERESTING
 - EASY to understand
@@ -249,12 +249,12 @@ Make the questions feel like a fun game, not a boring test! 🎮✨`
         },
         {
           role: "user",
-          content: `Generate 3 multiple choice questions about: ${topic}`
+          content: `Generate at least 5 multiple choice questions about: ${topic}`
         }
       ],
       model: "llama3-8b-8192",
       temperature: 0.8,
-      max_tokens: 600,
+      max_tokens: 1000,
     });
 
     const quizData = completion.choices[0].message.content;
@@ -275,22 +275,67 @@ Make the questions feel like a fun game, not a boring test! 🎮✨`
       questions = {
         questions: [
           {
-            question: `What is the main concept of ${topic}?`,
-            options: ['Option A', 'Option B', 'Option C', 'Option D'],
+            question: 'What is the largest planet in our solar system?',
+            options: ['Jupiter', 'Saturn', 'Earth', 'Mars'],
             correctAnswer: 0
           },
           {
-            question: `Which of the following is related to ${topic}?`,
-            options: ['Option A', 'Option B', 'Option C', 'Option D'],
+            question: 'Which planet is known as the Red Planet?',
+            options: ['Venus', 'Mars', 'Jupiter', 'Mercury'],
             correctAnswer: 1
           },
           {
-            question: `How does ${topic} work?`,
-            options: ['Option A', 'Option B', 'Option C', 'Option D'],
+            question: 'Which planet is closest to the Sun?',
+            options: ['Venus', 'Earth', 'Mercury', 'Mars'],
             correctAnswer: 2
+          },
+          {
+            question: 'Which planet has the most moons?',
+            options: ['Earth', 'Jupiter', 'Saturn', 'Mars'],
+            correctAnswer: 2
+          },
+          {
+            question: 'Which planet is known for its rings?',
+            options: ['Mars', 'Saturn', 'Neptune', 'Venus'],
+            correctAnswer: 1
           }
         ]
       };
+    }
+    
+    // After parsing the AI response and before sending the response
+    if (questions && questions.questions && Array.isArray(questions.questions)) {
+      let fallbackQuestions = [
+        {
+          question: 'What is the largest planet in our solar system?',
+          options: ['Jupiter', 'Saturn', 'Earth', 'Mars'],
+          correctAnswer: 0
+        },
+        {
+          question: 'Which planet is known as the Red Planet?',
+          options: ['Venus', 'Mars', 'Jupiter', 'Mercury'],
+          correctAnswer: 1
+        },
+        {
+          question: 'Which planet is closest to the Sun?',
+          options: ['Venus', 'Earth', 'Mercury', 'Mars'],
+          correctAnswer: 2
+        },
+        {
+          question: 'Which planet has the most moons?',
+          options: ['Earth', 'Jupiter', 'Saturn', 'Mars'],
+          correctAnswer: 2
+        },
+        {
+          question: 'Which planet is known for its rings?',
+          options: ['Mars', 'Saturn', 'Neptune', 'Venus'],
+          correctAnswer: 1
+        }
+      ];
+      while (questions.questions.length < 5) {
+        questions.questions.push(fallbackQuestions[questions.questions.length % fallbackQuestions.length]);
+      }
+      questions.questions = questions.questions.slice(0, 5);
     }
     
     res.json({ 

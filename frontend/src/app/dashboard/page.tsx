@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { findBackendPort } from '@/config/api'
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'chat' | 'quiz' | 'upload' | 'history'>('chat')
+  const searchParams = useSearchParams()
+  const initialTab = (searchParams?.get('tab') as 'chat' | 'quiz' | 'upload' | 'history') || 'chat'
+  const [activeTab, setActiveTab] = useState<'chat' | 'quiz' | 'upload' | 'history'>(initialTab)
   const [message, setMessage] = useState('')
   const [chatHistory, setChatHistory] = useState<Array<{role: string, content: string}>>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -18,8 +20,10 @@ export default function Dashboard() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [score, setScore] = useState(0)
   const [showResults, setShowResults] = useState(false)
+  const [showReview, setShowReview] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<Array<{name: string, content: string, originalContent: string, fileType: string}>>([])
   const [backendUrl, setBackendUrl] = useState('')
+  const [userAnswers, setUserAnswers] = useState<number[]>([])
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -36,6 +40,17 @@ export default function Dashboard() {
     }
     initBackend()
   }, [])
+
+  // Sync tab with URL if it changes
+  useEffect(() => {
+    if (searchParams) {
+      const urlTab = searchParams.get('tab') as 'chat' | 'quiz' | 'upload' | 'history'
+      if (urlTab && urlTab !== activeTab) {
+        setActiveTab(urlTab)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   if (!user) {
     return null
@@ -86,6 +101,7 @@ export default function Dashboard() {
       setCurrentQuestion(0)
       setScore(0)
       setShowResults(false)
+      setUserAnswers([])
     } catch (error) {
       console.error('Quiz generation error:', error)
     } finally {
@@ -94,10 +110,11 @@ export default function Dashboard() {
   }
 
   const handleQuizAnswer = (selectedOption: number) => {
-    if (quizQuestions[currentQuestion].correct === selectedOption) {
+    setUserAnswers(prev => [...prev, selectedOption])
+    const correctIdx = quizQuestions[currentQuestion].correctAnswer !== undefined ? quizQuestions[currentQuestion].correctAnswer : quizQuestions[currentQuestion].correct;
+    if (correctIdx === selectedOption) {
       setScore(prev => prev + 1)
     }
-    
     if (currentQuestion + 1 < quizQuestions.length) {
       setCurrentQuestion(prev => prev + 1)
     } else {
@@ -157,7 +174,7 @@ export default function Dashboard() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#112022] text-white">
+      <div className="min-h-screen text-white">
         {/* Header */}
         <header className="bg-[#1a2f32] border-b border-[#244347] px-6 py-4">
           <div className="flex items-center justify-between">
@@ -166,7 +183,7 @@ export default function Dashboard() {
                 onClick={() => router.push('/')}
                 className="text-2xl font-bold text-[#90e9f5] hover:text-[#64b5f6] transition-colors cursor-pointer"
               >
-                MentorMe Dashboard
+                MentorMe
               </button>
               <span className="text-gray-400">Welcome back, {user.name}! 👋</span>
             </div>
@@ -205,16 +222,6 @@ export default function Dashboard() {
               🤖 AI Tutor Chat
             </button>
             <button
-              onClick={() => setActiveTab('quiz')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'quiz'
-                  ? 'border-[#90e9f5] text-[#90e9f5]'
-                  : 'border-transparent text-gray-400 hover:text-white'
-              }`}
-            >
-              🎯 Quiz Generator
-            </button>
-            <button
               onClick={() => setActiveTab('upload')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'upload'
@@ -223,6 +230,16 @@ export default function Dashboard() {
               }`}
             >
               📝 Document Upload
+            </button>
+            <button
+              onClick={() => setActiveTab('quiz')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'quiz'
+                  ? 'border-[#90e9f5] text-[#90e9f5]'
+                  : 'border-transparent text-gray-400 hover:text-white'
+              }`}
+            >
+              🎯 Quiz Generator
             </button>
             <button
               onClick={() => setActiveTab('history')}
@@ -242,21 +259,22 @@ export default function Dashboard() {
           {/* AI Tutor Chat */}
           {activeTab === 'chat' && (
             <div className="max-w-4xl mx-auto">
-              <div className="bg-[#1a2f32] rounded-lg p-6 mb-6">
-                <h2 className="text-xl font-bold text-[#90e9f5] mb-4">🤖 AI Tutor Chat</h2>
+              <div className="bg-[#1a2f32] rounded-lg p-6 mb-6 flex flex-col min-h-[40vh] md:min-h-[50vh]" style={{height: chatHistory.length === 0 ? '60vh' : 'auto'}}>
+                <h2 className="text-xl font-bold text-[#90e9f5] mb-4 flex items-center gap-2">
+                  <span role="img" aria-label="robot">🤖</span> AI Tutor Chat
+                </h2>
                 <p className="text-gray-400 mb-6">
                   Ask me anything! I'm here to help you learn and understand any topic.
                 </p>
-                
                 {/* Chat History */}
-                <div className="bg-[#112022] rounded-lg p-4 h-96 overflow-y-auto mb-4">
+                <div className={`flex-1 bg-[#112022] rounded-lg p-4 mb-4 flex flex-col ${chatHistory.length > 0 ? 'overflow-y-auto max-h-[50vh] md:max-h-[60vh]' : ''}` }>
                   {chatHistory.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                      <div className="text-4xl mb-4">🤖</div>
+                    <div className="flex flex-1 flex-col items-center justify-center text-gray-500 py-8">
+                      <div className="text-5xl mb-4">🤖</div>
                       <p>Start a conversation with your AI tutor!</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="flex-1 flex flex-col justify-end space-y-4">
                       {chatHistory.map((msg, index) => (
                         <div
                           key={index}
@@ -286,9 +304,8 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
-                
                 {/* Message Input */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-auto">
                   <input
                     type="text"
                     value={message}
@@ -306,87 +323,6 @@ export default function Dashboard() {
                     Send
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Quiz Generator */}
-          {activeTab === 'quiz' && (
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-[#1a2f32] rounded-lg p-6">
-                <h2 className="text-xl font-bold text-[#90e9f5] mb-4">🎯 Quiz Generator</h2>
-                
-                {quizQuestions.length === 0 ? (
-                  <div>
-                    <p className="text-gray-400 mb-6">
-                      Generate a quiz on any topic to test your knowledge!
-                    </p>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={quizTopic}
-                        onChange={(e) => setQuizTopic(e.target.value)}
-                        placeholder="Enter a topic (e.g., JavaScript, Math, History)..."
-                        className="flex-1 bg-[#112022] border border-[#244347] rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-[#90e9f5]"
-                      />
-                      <button
-                        onClick={generateQuiz}
-                        disabled={isLoading || !quizTopic.trim()}
-                        className="bg-[#90e9f5] text-[#112022] px-6 py-2 rounded-lg font-medium hover:bg-[#64b5f6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isLoading ? 'Generating...' : 'Generate Quiz'}
-                      </button>
-                    </div>
-                  </div>
-                ) : showResults ? (
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-[#90e9f5] mb-4">Quiz Results</h3>
-                    <div className="text-4xl mb-4">🎉</div>
-                    <p className="text-xl text-white mb-2">
-                      You scored {score} out of {quizQuestions.length}!
-                    </p>
-                    <p className="text-gray-400 mb-6">
-                      {score === quizQuestions.length ? 'Perfect score! Amazing job!' : 
-                       score >= quizQuestions.length * 0.8 ? 'Great job! You know this topic well!' :
-                       score >= quizQuestions.length * 0.6 ? 'Good effort! Keep studying!' :
-                       'Keep practicing! You\'ll get better!'}
-                    </p>
-                    <button
-                      onClick={() => {
-                        setQuizQuestions([])
-                        setQuizTopic('')
-                        setShowResults(false)
-                      }}
-                      className="bg-[#90e9f5] text-[#112022] px-6 py-2 rounded-lg font-medium hover:bg-[#64b5f6] transition-colors"
-                    >
-                      Take Another Quiz
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="mb-4">
-                      <p className="text-gray-400">
-                        Question {currentQuestion + 1} of {quizQuestions.length}
-                      </p>
-                    </div>
-                    <div className="bg-[#112022] rounded-lg p-6 mb-6">
-                      <h3 className="text-lg font-semibold text-white mb-6">
-                        {quizQuestions[currentQuestion].question}
-                      </h3>
-                      <div className="space-y-3">
-                        {quizQuestions[currentQuestion].options.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleQuizAnswer(index)}
-                            className="w-full text-left bg-[#244347] hover:bg-[#90e9f5] hover:text-[#112022] px-4 py-3 rounded-lg transition-colors"
-                          >
-                            {String.fromCharCode(65 + index)}. {option}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -473,6 +409,169 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Quiz Generator */}
+          {activeTab === 'quiz' && !showReview && (
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-[#1a2f32] rounded-lg p-6">
+                <h2 className="text-xl font-bold text-[#90e9f5] mb-4">🎯 Quiz Generator</h2>
+                
+                {quizQuestions.length === 0 ? (
+                  <div>
+                    <p className="text-gray-400 mb-6">
+                      Generate a quiz on any topic to test your knowledge!
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={quizTopic}
+                        onChange={(e) => setQuizTopic(e.target.value)}
+                        placeholder="Enter a topic (e.g., JavaScript, Math, History)..."
+                        className="flex-1 bg-[#112022] border border-[#244347] rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-[#90e9f5]"
+                      />
+                      <button
+                        onClick={generateQuiz}
+                        disabled={isLoading || !quizTopic.trim()}
+                        className="bg-[#90e9f5] text-[#112022] px-6 py-2 rounded-lg font-medium hover:bg-[#64b5f6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? 'Generating...' : 'Generate Quiz'}
+                      </button>
+                    </div>
+                  </div>
+                ) : showResults ? (
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-[#90e9f5] mb-4">Quiz Results</h3>
+                    <div className="text-4xl mb-4">🎉</div>
+                    <p className="text-xl text-white mb-2">
+                      You scored {score} out of {quizQuestions.length}!
+                    </p>
+                    <div className="flex flex-col items-center gap-4 mt-6">
+                      <button
+                        onClick={() => { setShowReview(true); setShowResults(false); }}
+                        className="bg-[#90e9f5] text-[#112022] px-6 py-2 rounded-lg font-medium hover:bg-[#64b5f6] transition-colors"
+                      >
+                        View Answers
+                      </button>
+                      <button
+                        onClick={() => {
+                          setQuizQuestions([])
+                          setQuizTopic('')
+                          setShowResults(false)
+                          setUserAnswers([])
+                          setCurrentQuestion(0)
+                          setScore(0)
+                          setShowReview(false)
+                        }}
+                        className="bg-[#90e9f5] text-[#112022] px-6 py-2 rounded-lg font-medium hover:bg-[#64b5f6] transition-colors"
+                      >
+                        Take Another Quiz
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="mb-4">
+                      <p className="text-gray-400">
+                        Question {currentQuestion + 1} of {quizQuestions.length}
+                      </p>
+                    </div>
+                    <div className="bg-[#112022] rounded-lg p-6 mb-6">
+                      <h3 className="text-lg font-semibold text-white mb-6">
+                        {quizQuestions[currentQuestion].question}
+                      </h3>
+                      <div className="space-y-3">
+                        {quizQuestions[currentQuestion].options.map((option, index) => {
+                          const optionTrimmed = option.trim();
+                          const alreadyPrefixed = /^[A-Ha-h][\.:\)]\s/.test(optionTrimmed);
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => handleQuizAnswer(index)}
+                              className="w-full text-left bg-[#244347] hover:bg-[#90e9f5] hover:text-[#112022] px-4 py-3 rounded-lg transition-colors"
+                            >
+                              {alreadyPrefixed ? optionTrimmed : `${String.fromCharCode(65 + index)}. ${optionTrimmed}`}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Quiz Review */}
+          {activeTab === 'quiz' && showReview && quizQuestions.length > 0 && userAnswers.length === quizQuestions.length && (
+            <div className="max-w-4xl mx-auto mt-8">
+              <div className="bg-[#1a2f32] rounded-lg p-6">
+                <h2 className="text-xl font-bold text-[#90e9f5] mb-4">Quiz Review</h2>
+                <div className="space-y-6">
+                  {quizQuestions.map((q, idx) => {
+                    const userAnswer = userAnswers[idx];
+                    const correctAnswer = q.correctAnswer !== undefined ? q.correctAnswer : q.correct;
+                    return (
+                      <div key={idx} className="bg-[#112022] rounded-lg p-4">
+                        <div className="font-semibold text-white mb-2">Q{idx + 1}: {q.question}</div>
+                        <div className="space-y-2">
+                          {q.options.map((option, oidx) => {
+                            const optionTrimmed = option.trim();
+                            const alreadyPrefixed = /^[A-Ha-h][\.\:\)]\s/.test(optionTrimmed);
+                            const display = alreadyPrefixed ? optionTrimmed : `${String.fromCharCode(65 + oidx)}. ${optionTrimmed}`;
+                            const isUser = userAnswer === oidx;
+                            const isCorrect = correctAnswer === oidx;
+                            let className = 'px-4 py-2 rounded-lg bg-[#244347] text-white';
+                            if (isCorrect && isUser) {
+                              className = 'px-4 py-2 rounded-lg bg-green-600 text-white font-bold';
+                            } else if (isCorrect) {
+                              className = 'px-4 py-2 rounded-lg bg-green-600 text-white font-bold';
+                            } else if (isUser) {
+                              className = 'px-4 py-2 rounded-lg bg-red-600 text-white font-bold';
+                            }
+                            return (
+                              <div key={oidx} className={className}>
+                                {display}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
+                  <button
+                    onClick={() => {
+                      setShowReview(false);
+                      setShowResults(false);
+                      setQuizQuestions([]);
+                      setUserAnswers([]);
+                      setCurrentQuestion(0);
+                      setScore(0);
+                      generateQuiz();
+                    }}
+                    className="bg-[#90e9f5] text-[#112022] px-6 py-2 rounded-lg font-medium hover:bg-[#64b5f6] transition-colors"
+                  >
+                    Generate More
+                  </button>
+                  <button
+                    onClick={() => {
+                      setQuizQuestions([]);
+                      setQuizTopic('');
+                      setShowResults(false);
+                      setUserAnswers([]);
+                      setCurrentQuestion(0);
+                      setScore(0);
+                      setShowReview(false);
+                    }}
+                    className="bg-[#90e9f5] text-[#112022] px-6 py-2 rounded-lg font-medium hover:bg-[#64b5f6] transition-colors"
+                  >
+                    New Quiz
+                  </button>
+                </div>
               </div>
             </div>
           )}
