@@ -240,12 +240,8 @@ app.post('/api/quiz', async (req, res) => {
 - FUN to answer
 - EDUCATIONAL but not boring
 
-Return the response in valid JSON format with this structure:
-{"questions": [{"question": "question text", "options": ["A", "B", "C", "D"], "correctAnswer": 0}]}
-
-The correctAnswer should be the index (0-3) of the correct option.
-
-Make the questions feel like a fun game, not a boring test! 🎮✨`
+Return ONLY valid JSON in this format: {"questions": [{"question": "question text", "options": ["A", "B", "C", "D"], "correctAnswer": 0}]}
+Do not include any text or explanation before or after the JSON. Do not use markdown. Only output the JSON object.`
         },
         {
           role: "user",
@@ -258,7 +254,7 @@ Make the questions feel like a fun game, not a boring test! 🎮✨`
     });
 
     const quizData = completion.choices[0].message.content;
-    
+    console.log('Raw AI quiz response:', quizData); // Log the raw response for debugging
     // Try to parse the JSON response
     let questions;
     try {
@@ -275,61 +271,60 @@ Make the questions feel like a fun game, not a boring test! 🎮✨`
       questions = {
         questions: [
           {
-            question: 'What is the largest planet in our solar system?',
-            options: ['Jupiter', 'Saturn', 'Earth', 'Mars'],
+            question: 'What is the main concept of Java?',
+            options: ['Object-Oriented Programming', 'Procedural Programming', 'Functional Programming', 'Logic Programming'],
             correctAnswer: 0
           },
           {
-            question: 'Which planet is known as the Red Planet?',
-            options: ['Venus', 'Mars', 'Jupiter', 'Mercury'],
+            question: 'Which company originally developed Java?',
+            options: ['Microsoft', 'Sun Microsystems', 'Apple', 'Google'],
             correctAnswer: 1
           },
           {
-            question: 'Which planet is closest to the Sun?',
-            options: ['Venus', 'Earth', 'Mercury', 'Mars'],
+            question: 'Which keyword is used to inherit a class in Java?',
+            options: ['this', 'super', 'extends', 'implements'],
             correctAnswer: 2
           },
           {
-            question: 'Which planet has the most moons?',
-            options: ['Earth', 'Jupiter', 'Saturn', 'Mars'],
-            correctAnswer: 2
-          },
-          {
-            question: 'Which planet is known for its rings?',
-            options: ['Mars', 'Saturn', 'Neptune', 'Venus'],
+            question: 'Which method is the entry point of a Java program?',
+            options: ['start()', 'main()', 'run()', 'init()'],
             correctAnswer: 1
+          },
+          {
+            question: 'Which of these is NOT a Java primitive type?',
+            options: ['int', 'float', 'String', 'boolean'],
+            correctAnswer: 2
           }
         ]
       };
     }
-    
     // After parsing the AI response and before sending the response
     if (questions && questions.questions && Array.isArray(questions.questions)) {
       let fallbackQuestions = [
         {
-          question: 'What is the largest planet in our solar system?',
-          options: ['Jupiter', 'Saturn', 'Earth', 'Mars'],
+          question: 'What is the main concept of Java?',
+          options: ['Object-Oriented Programming', 'Procedural Programming', 'Functional Programming', 'Logic Programming'],
           correctAnswer: 0
         },
         {
-          question: 'Which planet is known as the Red Planet?',
-          options: ['Venus', 'Mars', 'Jupiter', 'Mercury'],
+          question: 'Which company originally developed Java?',
+          options: ['Microsoft', 'Sun Microsystems', 'Apple', 'Google'],
           correctAnswer: 1
         },
         {
-          question: 'Which planet is closest to the Sun?',
-          options: ['Venus', 'Earth', 'Mercury', 'Mars'],
+          question: 'Which keyword is used to inherit a class in Java?',
+          options: ['this', 'super', 'extends', 'implements'],
           correctAnswer: 2
         },
         {
-          question: 'Which planet has the most moons?',
-          options: ['Earth', 'Jupiter', 'Saturn', 'Mars'],
-          correctAnswer: 2
-        },
-        {
-          question: 'Which planet is known for its rings?',
-          options: ['Mars', 'Saturn', 'Neptune', 'Venus'],
+          question: 'Which method is the entry point of a Java program?',
+          options: ['start()', 'main()', 'run()', 'init()'],
           correctAnswer: 1
+        },
+        {
+          question: 'Which of these is NOT a Java primitive type?',
+          options: ['int', 'float', 'String', 'boolean'],
+          correctAnswer: 2
         }
       ];
       while (questions.questions.length < 5) {

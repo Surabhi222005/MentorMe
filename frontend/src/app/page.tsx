@@ -301,6 +301,57 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {activeSection === 'features' && (
+        <div className="flex-1 flex items-center justify-center px-6 py-12 mt-8 mb-24">
+          <div className="max-w-6xl mx-auto w-full">
+            <h2 className="text-3xl font-bold mb-12 text-white">Features</h2>
+            <div className="grid md:grid-cols-3 gap-8 items-stretch">
+              <div
+                className="bg-gradient-to-br from-[#1a2f32] to-[#244347] rounded-xl p-8 border border-[#244347] hover:border-[#90e9f5] transition-all duration-300 flex flex-col h-full cursor-pointer"
+                onClick={() => user ? router.push('/dashboard?tab=chat') : router.push('/login')}
+              >
+                <div className="text-4xl mb-6 text-center">🤖</div>
+                <h3 className="text-xl font-bold text-white mb-4 text-center">AI Tutor Chat</h3>
+                <p className="text-gray-400 text-center leading-relaxed flex-1">
+                  Get instant help with any question, upload documents, and have interactive conversations with your personalized AI tutor.
+                </p>
+              </div>
+              <div
+                className="bg-gradient-to-br from-[#1a2f32] to-[#244347] rounded-xl p-8 border border-[#244347] hover:border-[#90e9f5] transition-all duration-300 flex flex-col h-full cursor-pointer"
+                onClick={() => user ? router.push('/dashboard?tab=upload') : router.push('/login')}
+              >
+                <div className="text-4xl mb-6 text-center">📝</div>
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Smart Notes</h3>
+                <p className="text-gray-400 text-center leading-relaxed flex-1">
+                  Upload any document and get simplified, easy-to-understand notes instantly. Perfect for studying and revision.
+                </p>
+              </div>
+              <div
+                className="bg-gradient-to-br from-[#1a2f32] to-[#244347] rounded-xl p-8 border border-[#244347] hover:border-[#90e9f5] transition-all duration-300 flex flex-col h-full cursor-pointer"
+                onClick={() => user ? router.push('/dashboard?tab=quiz') : router.push('/login')}
+              >
+                <div className="text-4xl mb-6 text-center">🎯</div>
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Quiz Generator</h3>
+                <p className="text-gray-400 text-center leading-relaxed flex-1">
+                  Test your knowledge with AI-generated quizzes tailored to your learning progress and subject matter.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeSection === 'about' && (
+        <div className="flex-1 flex items-center justify-center px-6 py-12 mt-8 mb-24">
+          <div className="max-w-2xl mx-auto w-full text-white">
+            <h2 className="text-3xl font-bold mb-8">About MentorMe</h2>
+            <p>
+              MentorMe is your AI-powered learning companion, designed to help you master any subject with personalized support, smart notes, and interactive quizzes. Our mission is to make learning engaging, effective, and accessible for everyone!
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
